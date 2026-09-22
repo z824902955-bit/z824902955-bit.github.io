@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#124B9B">
+<title>山西考德上 · 公考AI实验室 3.1</title>
+<style>
+:root{--blue:#1559B7;--dark:#0D3F88;--light:#EEF5FF;--text:#172033;--muted:#6B7688;--line:#E5EAF1;--bg:#F4F7FB;--red:#D83A3A}
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+body{min-height:100vh}.wrap{max-width:720px;margin:auto;padding:14px 14px 40px}
+.hero{background:linear-gradient(135deg,#0D3F88,#2875DF);color:#fff;border-radius:22px;padding:23px 19px;box-shadow:0 12px 30px rgba(18,75,155,.18)}
+.hero h1{margin:0 0 8px;font-size:24px}.hero p{margin:0;font-size:14px;line-height:1.7}.progress{height:6px;background:rgba(255,255,255,.28);border-radius:20px;overflow:hidden;margin-top:18px}.bar{height:100%;width:0;background:#fff;transition:.25s}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:13px;box-shadow:0 5px 18px rgba(20,40,70,.05)}
+.qno{color:var(--blue);font-size:12px;font-weight:800}.question{font-size:17px;line-height:1.6;font-weight:800;margin:8px 0 15px}
+.option{display:block;border:1px solid var(--line);border-radius:13px;padding:13px 12px;margin:9px 0;background:#fff;line-height:1.55;font-size:14px}.option input{margin-right:8px;accent-color:var(--blue)}
+.option:has(input:checked){border-color:var(--blue);background:var(--light)}
+button{width:100%;border:0;border-radius:13px;background:var(--blue);color:#fff;font-size:16px;font-weight:800;padding:14px;cursor:pointer}.secondary{background:var(--light);color:var(--blue);margin-top:10px}
+.field{display:block;margin-top:15px;font-size:14px;font-weight:800}input[type=text],input[type=tel]{width:100%;margin-top:7px;padding:13px 12px;border:1px solid var(--line);border-radius:12px;font-size:16px;outline:0;background:#fff}input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,89,183,.08)}
+.req{color:var(--red);margin-left:3px}.hint{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6}.hidden{display:none!important}
+.center{text-align:center}.badge{display:inline-block;padding:7px 12px;border-radius:999px;background:var(--light);color:var(--blue);font-size:13px;font-weight:800}.score{font-size:56px;line-height:1;font-weight:900;color:var(--blue);margin:12px 0 7px}.score-label{color:var(--muted);font-size:13px}
+.section{margin-top:21px}.section-title{font-size:16px;font-weight:850;margin-bottom:10px}.dimension{margin:14px 0}.dimension-top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:7px}.track{height:9px;border-radius:20px;overflow:hidden;background:#EDF0F5}.fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#2E79E0,#124B9B)}
+.notice{background:#F6FAFF;border-left:4px solid var(--blue);border-radius:9px;padding:12px 13px;color:#445166;font-size:14px;line-height:1.75}.advice{background:#FAFBFD;border:1px solid var(--line);border-radius:13px;padding:14px;margin-top:10px}.advice strong{display:block;margin-bottom:7px;font-size:14px}.advice p{margin:0;color:#4E5B70;font-size:14px;line-height:1.75}ul{padding-left:20px}li{color:#4E5B70;font-size:14px;line-height:1.8;margin:5px 0}
+.status{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.6}.footer{text-align:center;color:#8B95A5;font-size:11px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero">
+<h1>山西考德上 · 公考AI实验室 3.1</h1>
+<p>公考能力诊断工具｜从行测基础、申论思维、学习执行、岗位匹配、备考状态五个维度建立阶段性备考画像。</p >
+<div class="progress"><div class="bar" id="bar"></div></div>
+</section>
+<div id="testArea"></div>
+
+<section id="contactArea" class="card hidden">
+<h2 style="margin:0 0 7px">测评已完成</h2>
+<p style="color:#6B7688;font-size:13px;line-height:1.7">填写手机号后，系统立即生成你的能力画像和阶段性备考建议。</p >
+<label class="field">姓名/昵称（选填）
+<input id="name" type="text" maxlength="30" placeholder="例如：小王"></label>
+<label class="field">手机号<span class="req">*</span>
+<input id="phone" type="tel" maxlength="11" inputmode="numeric" autocomplete="tel" placeholder="请输入11位手机号" required>
+<div class="hint">手机号为必填项，请填写11位大陆手机号。</div></label>
+<label class="field">微信号（选填）
+<input id="wechat" type="text" maxlength="50" placeholder="请输入微信号"></label>
+<button id="submitBtn" onclick="submitContact()">查看我的AI测评报告</button>
+<div id="saveStatus" class="status hidden"></div>
+</section>
+
+<section id="resultArea" class="card hidden"></section>
+<div class="footer">山西考德上 · 公考AI实验室</div>
+</div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbwCusBl3Xtp-hQKu2XsBz7b7bJmdFTbK9B2RFMEJFvlemHTC2_F_IujFDfIW5jmyShxRg/exec";
+
+const questions=[
+{d:"行测基础",q:"言语理解中，一段材料先提出核心观点，后文主要围绕该观点展开。主旨概括更应关注：",o:["材料中的某个细节","核心观点及其后续论证关系","最后出现的例子","将所有信息逐句罗列"],a:1},
+{d:"行测基础",q:"数量关系遇到陌生题型时，更合理的处理方式是：",o:["直接凭感觉作答","先判断题型并寻找数量关系，必要时进行代入验证","无论如何完整死算","看到复杂数字就直接放弃"],a:1},
+{d:"行测基础",q:"图形推理开始解题时，更值得优先观察：",o:["只观察颜色","元素数量、位置、方向、叠加等结构特征","只观察面积大小","先比较选项长短"],a:1},
+{d:"行测基础",q:"资料分析题询问“同比增长率”时，核心是比较：",o:["现期量与基期量之间的变化关系","只有现期量","只有增长量","选项之间的大小"],a:0},
+{d:"申论思维",q:"申论归纳概括面对多则材料时，更重要的是：",o:["尽量原句照抄","提炼同类信息并形成结构化要点","只寻找材料金句","写得越长越好"],a:1},
+{d:"申论思维",q:"综合分析题要求分析某一现象，更合理的作答思路是：",o:["只表达个人态度","立足材料事实，梳理原因、影响、问题及对策等逻辑关系","只写解决措施","完全不引用材料"],a:1},
+{d:"申论思维",q:"文章写作中，分论点最重要的是：",o:["每段句式完全一致","围绕总论点形成层次清晰、相互支撑的论证结构","每段都写故事","大量使用生僻词"],a:1},
+{d:"申论思维",q:"材料同时出现成绩、问题和原因时，应该：",o:["只写成绩","依据题目要求梳理事实之间的逻辑关系","只写问题","只写原因"],a:1},
+{d:"学习执行",q:"工作日每天只有约2小时备考时间，更合理的做法是：",o:["当天想到什么学什么","预先安排模块和任务，并按计划完成","主要用于整理学习资料","等状态好以后再学习"],a:1},
+{d:"学习执行",q:"连续一周正确率偏低时，更有价值的处理方式是：",o:["直接停止训练","统计错误类型、定位原因并调整训练方式","继续机械刷题","认为自己不适合考试"],a:1},
+{d:"学习执行",q:"距离考试还有较长时间时，常见的执行风险是：",o:["完全没有波动","计划很多，但缺少稳定、可量化的执行","只做真题","只看课程不训练"],a:1},
+{d:"学习执行",q:"复盘错题时，最有价值的是：",o:["只记答案","明确错因、正确路径以及下次识别方法","抄题十遍","马上继续刷题"],a:1},
+{d:"岗位匹配",q:"选择公务员或事业单位岗位时，首先应核对：",o:["岗位名称是否好听","专业、学历、经历等资格条件","别人报考什么","宣传信息是否吸引人"],a:1},
+{d:"岗位匹配",q:"面对多个符合条件的岗位，更合理的做法是：",o:["随便选择一个","结合资格条件、地区意向、招录规模等信息逐项筛选","只看地点","只看招录人数"],a:1},
+{d:"备考状态",q:"模拟考试成绩出现波动时，更合理的判断方式是：",o:["一次成绩决定真实水平","结合多次成绩和分模块数据判断","停止训练","只看一次排名"],a:1},
+{d:"备考状态",q:"备考焦虑明显时，更有效的应对方式通常是：",o:["完全停止学习","把目标拆成当天可执行任务，并记录完成情况","通过熬夜补时间","频繁更换资料和学习方法"],a:1},
+{d:"备考状态",q:"进入冲刺阶段后，更需要避免的是：",o:["按照考试时间进行模拟","根据数据调整弱项","频繁更换学习体系","复盘完整套题"],a:2},
+{d:"行测基础",q:"一套行测题时间明显不够时，更值得复盘的是：",o:["只看最后总分","分析各模块耗时、正确率以及取舍策略","只看错题答案","继续增加无计划刷题量"],a:1}
+];
+
+let cur=0,answers=[];
+
+function render(){
+ if(cur>=questions.length){
+   document.getElementById("testArea").classList.add("hidden");
+   document.getElementById("contactArea").classList.remove("hidden");
+   document.getElementById("bar").style.width="100%";
+   window.scrollTo({top:0,behavior:"smooth"});
+   return;
+ }
+ const q=questions[cur];
+ let h='<section class="card"><div class="qno">第 '+(cur+1)+' / '+questions.length+' 题 · '+q.d+'</div><div class="question">'+q.q+'</div>';
+ q.o.forEach((x,i)=>h+='<label class="option"><input type="radio" name="answer" value="'+i+'" '+(answers[cur]===i?'checked':'')+'> '+x+'</label>');
+ h+='<button onclick="nextQ()">'+(cur===questions.length-1?'完成测评':'下一题')+'</button></section>';
+ document.getElementById("testArea").innerHTML=h;
+ document.getElementById("bar").style.width=Math.round(cur/questions.length*100)+"%";
+}
+
+function nextQ(){
+ const s=document.querySelector('input[name="answer"]:checked');
+ if(!s){alert("请先选择一个答案。");return;}
+ answers[cur]=Number(s.value);cur++;render();
+}
+
+function calc(){
+ const ds={"行测基础":0,"申论思维":0,"学习执行":0,"岗位匹配":0,"备考状态":0};
+ const ts={"行测基础":0,"申论思维":0,"学习执行":0,"岗位匹配":0,"备考状态":0};
+ questions.forEach((q,i)=>{ts[q.d]++;if(answers[i]===q.a)ds[q.d]++;});
+ Object.keys(ds).forEach(k=>ds[k]=Math.round(ds[k]/ts[k]*100));
+ const total=Math.round(Object.values(ds).reduce((a,b)=>a+b,0)/5);
+ const level=total>=85?"进阶提升型":total>=70?"稳步提升型":total>=55?"基础提升型":"起步提升型";
+ return {dimensions:ds,total,level};
+}
+
+const advice={
+"行测基础":"建议采用“知识点梳理—专项训练—限时训练—错因归类”的闭环。重点关注正确率、平均用时和题型识别速度三个指标。对于反复出错的题型，应优先寻找错误模式，而不是简单增加题量。",
+"申论思维":"建议强化材料信息加工能力，重点训练“定位信息—归并同类—提炼观点—建立逻辑—规范表达”。阶段训练中应关注要点覆盖、逻辑层次和表达准确度，避免答案停留在材料摘抄层面。",
+"学习执行":"建议把备考计划从“时间计划”调整为“任务计划”，明确每天完成的模块、题量、限时要求和复盘任务。每周统计计划完成率，并根据实际完成情况调整下一周期任务量。",
+"岗位匹配":"建议建立岗位筛选框架，先核验专业、学历、基层经历等硬性资格条件，再结合地区、招录规模和个人职业意向进行比较。岗位选择应以官方招录信息为依据。",
+"备考状态":"建议建立稳定的训练节奏和阶段复盘机制。对于成绩波动，应优先分析模块正确率、完成时间和错误类型，而不是根据单次成绩判断整体水平。"
+};
+
+function renderResult(r){
+ const arr=Object.entries(r.dimensions);
+ const sorted=[...arr].sort((a,b)=>a[1]-b[1]);
+ const strong=[...arr].sort((a,b)=>b[1]-a[1])[0];
+ let bars="";
+ arr.forEach(([n,s])=>bars+='<div class="dimension"><div class="dimension-top"><strong>'+n+'</strong><span>'+s+' 分</span></div><div class="track"><div class="fill" style="width:'+s+'%"></div></div></div>');
+ let overall=r.total>=85?"你的五维能力结构相对完整，当前重点应放在限时稳定性、模块取舍和弱项精修。":r.total>=70?"你的公考备考基础已经形成，但不同能力维度之间仍存在差异。现阶段更适合采用“优势保持、短板突破、阶段复盘”的训练策略。":r.total>=55?"目前处于基础建立阶段，部分模块已有一定认知，但方法稳定性和训练执行仍有提升空间。建议先建立标准化训练流程，再逐步增加套题和计时训练。":"当前更适合优先建立完整的备考框架，包括基础知识、题型识别、训练节奏和复盘机制。暂时不建议单纯增加刷题数量。";
+ document.getElementById("resultArea").innerHTML=
+ '<div class="center"><span class="badge">'+r.level+'</span><div class="score">'+r.total+'</div><div class="score-label">公考综合能力指数</div></div>'+
+ '<div class="section"><div class="section-title">一、五维能力画像</div>'+bars+'</div>'+
+ '<div class="section"><div class="section-title">二、阶段性能力诊断</div><div class="notice">'+overall+'</div></div>'+
+ '<div class="section"><div class="section-title">三、相对优势维度</div><div class="advice"><strong>'+strong[0]+' · '+strong[1]+'分</strong><p>当前该维度表现相对稳定。建议保持训练节奏，并逐步增加限时训练，将已有能力转化为稳定得分能力。</p ></div></div>'+
+ '<div class="section"><div class="section-title">四、优先提升方向</div><div class="advice"><strong>第一优先级：'+sorted[0][0]+' · '+sorted[0][1]+'分</strong><p>'+advice[sorted[0][0]]+'</p ></div><div class="advice"><strong>第二优先级：'+sorted[1][0]+' · '+sorted[1][1]+'分</strong><p>'+advice[sorted[1][0]]+'</p ></div></div>'+
+ '<div class="section"><div class="section-title">五、建议训练机制</div><ul><li>以7天作为一个训练周期，前5天完成专项训练，第6天进行综合训练，第7天进行数据复盘。</li><li>每周至少进行一次完整计时训练，同时记录正确率、模块耗时和错误类型。</li><li>对低分模块优先进行针对性训练，不建议在所有模块之间平均分配时间。</li><li>连续两个训练周期数据没有明显改善时，应检查训练方法，而不是简单增加学习时长。</li></ul></div>'+
+ '<div class="section"><div class="section-title">六、测评说明</div><p class="hint">本测评用于建立阶段性的公考备考能力画像，不等同于正式考试成绩，也不能用于判断具体岗位录取结果。</p ></div>'+
+ '<button class="secondary" onclick="location.reload()">重新进行测评</button>';
+ document.getElementById("resultArea").classList.remove("hidden");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function submitContact(){
+ const phone=document.getElementById("phone").value.trim();
+ if(!/^1\d{10}$/.test(phone)){
+   alert("请输入正确的11位手机号");
+   document.getElementById("phone").focus();
+   return;
+ }
+ const r=calc();
+ const payload={
+   name:document.getElementById("name").value.trim(),
+   phone:phone,
+   wechat:document.getElementById("wechat").value.trim(),
+   score:r.total,
+   level:r.level,
+   dims:r.dimensions,
+   source:"公考AI实验室3.1",
+   answers:answers
+ };
+ renderResult(r);
+ const st=document.getElementById("saveStatus");
+ st.classList.remove("hidden");
+ st.textContent="报告已生成，后台正在保存测评数据……";
+ fetch(API_URL,{
+   method:"POST",
+   mode:"no-cors",
+   headers:{"Content-Type":"text/plain;charset=utf-8"},
+   body:JSON.stringify(payload),
+   keepalive:true
+ }).then(()=>{st.textContent="报告已生成。测评数据已提交后台保存。";})
+ .catch(()=>{st.textContent="报告已生成，但后台保存可能失败，请检查接口部署。";});
+}
+
+render();
+</script>
+</body>
+</html>
